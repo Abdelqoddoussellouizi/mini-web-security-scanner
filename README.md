@@ -49,7 +49,7 @@ python -m uvicorn app.main:app --reload
 
 If PowerShell prevents virtual-environment activation, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in that PowerShell window, then activate again.
 
-Open Swagger UI at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). The API creates `scanner.db` in the project directory on startup.
+Open the scanner at [http://127.0.0.1:8000](http://127.0.0.1:8000). The API creates `scanner.db` in the project directory on startup. API documentation remains available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
 ## API
 

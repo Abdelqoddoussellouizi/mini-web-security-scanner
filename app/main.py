@@ -9,6 +9,7 @@ from uuid import uuid4
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from app import database
@@ -70,6 +71,10 @@ def create_app(
         version="1.0.0",
         lifespan=lifespan,
     )
+
+    @application.get("/", include_in_schema=False)
+    def home() -> FileResponse:
+        return FileResponse(Path(__file__).parent / "static" / "index.html")
 
     @application.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:

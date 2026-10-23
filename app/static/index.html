@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173d32">
+  <title>Site Check | Mini Web Security Scanner</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172720;
+      --muted: #5c6c63;
+      --paper: #f3f7f1;
+      --surface: #ffffff;
+      --line: #dce6dc;
+      --forest: #173d32;
+      --forest-deep: #102e26;
+      --leaf: #c7e66b;
+      --pass: #176b48;
+      --pass-bg: #e8f5ec;
+      --warn: #87500a;
+      --warn-bg: #fff3d7;
+      --error: #a3332e;
+      --error-bg: #fde9e6;
+      --shadow: 0 18px 50px rgba(23, 61, 50, .09);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Aptos, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    button, input { font: inherit; }
+
+    .masthead {
+      position: relative;
+      overflow: hidden;
+      color: #f7fbf4;
+      background-color: var(--forest);
+      background-image: linear-gradient(115deg, rgba(16, 46, 38, .98), rgba(23, 61, 50, .93) 62%, rgba(44, 91, 66, .92)), repeating-linear-gradient(135deg, transparent 0 18px, rgba(255, 255, 255, .035) 18px 19px);
+    }
+
+    .masthead-inner, main {
+      width: min(100% - 40px, 1060px);
+      margin-inline: auto;
+    }
+
+    .masthead-inner { padding: 25px 0 34px; }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 28px;
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      aspect-ratio: 1;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .4);
+      border-radius: 10px;
+      color: var(--leaf);
+      font-weight: 800;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--leaf);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 700px;
+      margin-bottom: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 500;
+      line-height: 1.12;
+    }
+
+    .masthead-copy {
+      max-width: 650px;
+      margin-bottom: 0;
+      color: #d5e3d9;
+      font-size: 1.02rem;
+    }
+
+    main { padding-block: 30px 60px; }
+
+    .scan-section {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(250px, .62fr);
+      gap: 32px;
+      align-items: center;
+      padding: 25px 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin-bottom: 5px;
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+
+    .section-copy, .field-help { color: var(--muted); }
+    .section-copy { margin-bottom: 0; font-size: .93rem; }
+
+    .field-label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: .9rem;
+      font-weight: 750;
+    }
+
+    .input-row { display: flex; gap: 9px; }
+
+    input[type="text"] {
+      min-width: 0;
+      min-height: 48px;
+      flex: 1;
+      padding: 10px 13px;
+      border: 1px solid #aabbb0;
+      border-radius: 5px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    input[type="text"]:focus-visible, button:focus-visible, summary:focus-visible {
+      outline: 3px solid #cfeb77;
+      outline-offset: 3px;
+    }
+
+    .primary-button {
+      min-height: 48px;
+      padding: 10px 17px;
+      border: 0;
+      border-radius: 5px;
+      background: var(--forest);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .primary-button:hover { background: var(--forest-deep); }
+    .primary-button:disabled { cursor: wait; opacity: .68; }
+
+    .field-help { margin: 7px 0 0; font-size: .82rem; }
+
+    .authorization-note {
+      margin: 14px 0 0;
+      padding-left: 12px;
+      border-left: 3px solid #a4c957;
+      color: #43564a;
+      font-size: .84rem;
+    }
+
+    .notice {
+      margin-top: 20px;
+      padding: 12px 15px;
+      border: 1px solid #d9e5d9;
+      border-radius: 5px;
+      background: #eaf1e9;
+      color: #41564a;
+      font-size: .88rem;
+    }
+
+    .notice strong { color: var(--ink); }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(260px, .8fr);
+      gap: 42px;
+      margin-top: 38px;
+      align-items: start;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-heading h2 { margin: 0; }
+
+    .subtle-label {
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .empty-state {
+      padding: 20px 0;
+      color: var(--muted);
+    }
+
+    .empty-state p { margin-bottom: 0; }
+
+    .result-banner {
+      margin-top: 16px;
+      padding: 17px 19px;
+      border-left: 4px solid var(--pass);
+      border-radius: 4px;
+      background: var(--pass-bg);
+    }
+
+    .result-banner.warning { border-color: #c2841c; background: var(--warn-bg); }
+    .result-banner.error { border-color: var(--error); background: var(--error-bg); }
+
+    .result-banner h3 { margin-bottom: 3px; font-size: 1.12rem; }
+    .result-banner p { margin-bottom: 0; color: #43564a; font-size: .9rem; }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .82rem;
+      overflow-wrap: anywhere;
+    }
+
+    .finding-list, .history-list { margin: 0; padding: 0; list-style: none; }
+
+    .finding-list { margin-top: 12px; }
+
+    .finding {
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .finding-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .finding h3 { margin: 0; font-size: .98rem; }
+
+    .status-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: none;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 800;
+    }
+
+    .status-label.pass { color: var(--pass); background: var(--pass-bg); }
+    .status-label.warning { color: var(--warn); background: var(--warn-bg); }
+    .status-label.error { color: var(--error); background: var(--error-bg); }
+    .status-label::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    .finding p { margin: 5px 0 0; color: #4e6056; font-size: .9rem; }
+
+    details { margin-top: 7px; color: #43564a; font-size: .86rem; }
+    summary { width: fit-content; color: #285b43; cursor: pointer; font-weight: 700; }
+    details p { margin-top: 7px; font-size: .86rem; }
+
+    .history-list { margin-top: 5px; }
+
+    .history-item { border-bottom: 1px solid var(--line); }
+
+    .history-button {
+      display: block;
+      width: 100%;
+      padding: 12px 0;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .history-button:hover .history-url { color: var(--pass); text-decoration: underline; }
+    .history-url { display: block; overflow-wrap: anywhere; font-weight: 700; }
+    .history-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; color: var(--muted); font-size: .78rem; }
+    .history-empty { padding: 14px 0; color: var(--muted); font-size: .9rem; }
+
+    .footer-note {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 740px) {
+      .masthead-inner, main { width: min(100% - 30px, 1060px); }
+      .masthead-inner { padding: 19px 0 27px; }
+      .brand-row { margin-bottom: 23px; }
+      main { padding-top: 20px; }
+      .scan-section { grid-template-columns: 1fr; gap: 18px; padding: 20px; }
+      .content-grid { grid-template-columns: 1fr; gap: 32px; margin-top: 30px; }
+      .history-section { order: 2; }
+    }
+
+    @media (max-width: 480px) {
+      .input-row { flex-direction: column; }
+      .primary-button { width: 100%; }
+      .finding-topline { align-items: flex-start; }
+      .finding-topline h3 { max-width: 70%; }
+      .section-heading { align-items: flex-start; }
+      .section-heading .subtle-label { text-align: right; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .scan-section { animation: arrive .42s ease-out both; }
+      @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand-row"><span class="brand-mark" aria-hidden="true">S</span><span>Site Check</span></div>
+      <p class="eyebrow">A simple website check</p>
+      <h1>Get a clearer picture of your website's security settings.</h1>
+      <p class="masthead-copy">Check a few important browser-facing settings and get a straightforward summary of what was found.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="scan-section" aria-labelledby="scan-heading">
+      <div>
+        <p class="eyebrow" style="color:#527739">Start here</p>
+        <h2 id="scan-heading">Check a website</h2>
+        <p class="section-copy">This quick check looks at the connection and a small set of security settings.</p>
+      </div>
+      <form id="scan-form">
+        <label class="field-label" for="website-url">Website address</label>
+        <div class="input-row">
+          <input id="website-url" name="url" type="text" inputmode="url" autocomplete="url" placeholder="example.com" aria-describedby="url-help" required>
+          <button class="primary-button" id="scan-button" type="submit">Check website</button>
+        </div>
+        <p class="field-help" id="url-help">Enter a domain or full address. If no protocol is included, HTTPS is used.</p>
+        <p class="authorization-note">Only check websites you own or have permission to assess.</p>
+      </form>
+    </section>
+
+    <div class="notice"><strong>A useful first check, not a full audit.</strong> A warning points to a setting worth reviewing; it does not mean the site is vulnerable.</div>
+
+    <div class="content-grid">
+      <section aria-labelledby="result-heading" aria-live="polite" aria-atomic="false">
+        <div class="section-heading">
+          <h2 id="result-heading">Latest check</h2>
+          <span class="subtle-label" id="result-caption">Your results will appear here</span>
+        </div>
+        <div id="result-area" class="empty-state"><p>Enter a website address above to see its results.</p></div>
+      </section>
+
+      <aside class="history-section" aria-labelledby="history-heading">
+        <div class="section-heading">
+          <h2 id="history-heading">Scan history</h2>
+          <span class="subtle-label">Recent checks</span>
+        </div>
+        <ul class="history-list" id="history-list"><li class="history-empty">Loading recent checks...</li></ul>
+      </aside>
+    </div>
+
+    <p class="footer-note">This tool makes one non-invasive request and does not follow redirects or inspect page content. Results are basic configuration signals, not a guarantee that a website is secure.</p>
+  </main>
+
+  <div class="sr-only" id="announcer" role="status" aria-live="polite"></div>
+
+  <script>
+    const form = document.querySelector("#scan-form");
+    const urlInput = document.querySelector("#website-url");
+    const scanButton = document.querySelector("#scan-button");
+    const resultArea = document.querySelector("#result-area");
+    const resultCaption = document.querySelector("#result-caption");
+    const historyList = document.querySelector("#history-list");
+    const announcer = document.querySelector("#announcer");
+
+    const checkNames = {
+      https: "Encrypted connection",
+      content_security_policy: "Browser content rules",
+      strict_transport_security: "HTTPS-only setting",
+      x_content_type_options: "File type protection",
+      frame_restriction: "Page embedding protection",
+      referrer_policy: "Referrer privacy",
+      permissions_policy: "Browser feature limits",
+      technology_disclosure: "Technology details",
+      request_timeout: "Connection took too long",
+      request_failure: "Could not reach the website",
+      redirect_not_followed: "Website redirected elsewhere",
+      http_response: "Website response",
+      response_size_limit: "Response was too large"
+    };
+
+    const plainExplanations = {
+      https: {
+        pass: "The connection to this website is encrypted.",
+        warning: "This address uses an unencrypted connection. Information sent to the site may not be protected."
+      },
+      content_security_policy: {
+        pass: "The site tells browsers which sources they can load content from.",
+        warning: "The site does not send browser content rules. Whether to add them depends on how the site is built."
+      },
+      strict_transport_security: {
+        pass: "The site asks browsers to use a secure connection in the future.",
+        warning: "The site does not ask browsers to require a secure connection on future visits."
+      },
+      x_content_type_options: {
+        pass: "The site tells browsers to respect the declared file type.",
+        warning: "The site does not send a setting that helps browsers avoid guessing file types."
+      },
+      frame_restriction: {
+        pass: "The site limits whether other pages can display it inside a frame.",
+        warning: "No recognized setting was found to limit displaying this site inside another page."
+      },
+      referrer_policy: {
+        pass: "The site sets a policy for what address details browsers share when navigating away.",
+        warning: "The site does not set a policy for address details shared when visitors follow links away."
+      },
+      permissions_policy: {
+        pass: "The site sets limits on browser features such as camera or location access.",
+        warning: "The site does not set limits on browser features. The right policy depends on features the site needs."
+      },
+      technology_disclosure: {
+        pass: "No commonly identifying technology details were found in the response.",
+        warning: "The response includes details that may identify software used by the website. This alone is not proof of a problem."
+      }
+    };
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function displayStatus(status) {
+      if (status === "completed") return { title: "Looking good", copy: "No warnings were found in these checks.", className: "" };
+      if (status === "completed_with_warnings") return { title: "A few settings may need a look", copy: "Some checks found settings you may want to review. Warnings are not proof of a vulnerability.", className: "warning" };
+      return { title: "This check could not be completed", copy: "Review the details below, then confirm the address and try again if appropriate.", className: "error" };
+    }
+
+    function friendlyExplanation(finding) {
+      const messages = plainExplanations[finding.check_name];
+      if (messages) return messages[finding.status] || messages.pass;
+      return finding.explanation;
+    }
+
+    function renderScan(scan) {
+      const status = displayStatus(scan.status);
+      const attentionCount = scan.findings.filter((finding) => finding.status !== "pass").length;
+      resultArea.replaceChildren();
+
+      const banner = element("div", `result-banner ${status.className}`.trim());
+      banner.append(element("h3", "", status.title));
+      banner.append(element("p", "", attentionCount === 0 ? status.copy : `${status.copy} ${attentionCount} ${attentionCount === 1 ? "item" : "items"} to review.`));
+      const meta = element("div", "result-meta");
+      meta.append(element("span", "", scan.url));
+      meta.append(element("span", "", scan.http_status ? `Website response: ${scan.http_status}` : "No website response"));
+      banner.append(meta);
+      resultArea.append(banner);
+
+      const list = element("ul", "finding-list");
+      for (const finding of scan.findings) {
+        const item = element("li", "finding");
+        const topline = element("div", "finding-topline");
+        const title = checkNames[finding.check_name] || finding.check_name.replaceAll("_", " ");
+        topline.append(element("h3", "", title));
+        const state = finding.status === "pass" ? "Checked" : finding.status === "warning" ? "Review" : "Could not check";
+        topline.append(element("span", `status-label ${finding.status}`, state));
+        item.append(topline);
+        item.append(element("p", "", friendlyExplanation(finding)));
+
+        if (finding.status !== "pass" && finding.remediation && finding.remediation !== "No action needed.") {
+          const details = element("details");
+          details.append(element("summary", "", "What can I do?"));
+          details.append(element("p", "", finding.remediation));
+          item.append(details);
+        }
+        list.append(item);
+      }
+      resultArea.append(list);
+      resultCaption.textContent = `Checked ${formatDate(scan.scanned_at)}`;
+      announcer.textContent = `${status.title}. ${attentionCount} items to review.`;
+    }
+
+    function formatDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "recently";
+      return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date);
+    }
+
+    function historyStatus(status) {
+      if (status === "completed") return "No warnings";
+      if (status === "completed_with_warnings") return "Review settings";
+      return "Could not complete";
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch("/scans?limit=10");
+        if (!response.ok) throw new Error("History is unavailable.");
+        const data = await response.json();
+        historyList.replaceChildren();
+        if (data.scans.length === 0) {
+          historyList.append(element("li", "history-empty", "Your completed checks will appear here."));
+          return;
+        }
+        for (const scan of data.scans) {
+          const item = element("li", "history-item");
+          const button = element("button", "history-button");
+          button.type = "button";
+          button.append(element("span", "history-url", scan.url));
+          const meta = element("span", "history-meta");
+          meta.append(element("span", "", formatDate(scan.scanned_at)));
+          meta.append(element("span", "", historyStatus(scan.status)));
+          button.append(meta);
+          button.addEventListener("click", () => loadScan(scan.id));
+          item.append(button);
+          historyList.append(item);
+        }
+      } catch {
+        historyList.replaceChildren(element("li", "history-empty", "Scan history is not available right now."));
+      }
+    }
+
+    async function loadScan(scanId) {
+      resultArea.replaceChildren(element("p", "empty-state", "Loading saved results..."));
+      try {
+        const response = await fetch(`/scans/${encodeURIComponent(scanId)}`);
+        const scan = await response.json();
+        if (!response.ok) throw new Error(scan.detail || "Could not load this result.");
+        renderScan(scan);
+      } catch (error) {
+        showError(error.message || "Could not load this result.");
+      }
+    }
+
+    function showError(message) {
+      resultArea.replaceChildren();
+      const banner = element("div", "result-banner error");
+      banner.append(element("h3", "", "We couldn't start that check"));
+      banner.append(element("p", "", message));
+      resultArea.append(banner);
+      resultCaption.textContent = "Please review the address";
+      announcer.textContent = `We couldn't start that check. ${message}`;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      let url = urlInput.value.trim();
+      if (!/^[a-z][a-z\d+.-]*:\/\//i.test(url)) url = `https://${url}`;
+      scanButton.disabled = true;
+      scanButton.textContent = "Checking...";
+      resultArea.replaceChildren(element("p", "empty-state", "Checking the website. This can take a few seconds..."));
+      resultCaption.textContent = "Check in progress";
+      announcer.textContent = "Website check in progress.";
+
+      try {
+        const response = await fetch("/scans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const scan = await response.json();
+        if (!response.ok) throw new Error(scan.detail || "Please check the website address and try again.");
+        renderScan(scan);
+        await loadHistory();
+      } catch (error) {
+        showError(error.message || "Please check the website address and try again.");
+      } finally {
+        scanButton.disabled = false;
+        scanButton.textContent = "Check website";
+      }
+    });
+
+    loadHistory();
+  </script>
+</body>
+</html>

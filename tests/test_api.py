@@ -187,6 +187,17 @@ def test_health_endpoint_initializes_database(database_path: Path) -> None:
     assert database_path.exists()
 
 
+def test_homepage_serves_scanner_interface(database_path: Path) -> None:
+    handler = httpx.MockTransport(lambda request: httpx.Response(200))
+    with make_client(database_path, handler) as client:
+        response = client.get("/")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Check a website" in response.text
+    assert "Scan history" in response.text
+
+
 def test_redirect_is_not_followed(public_dns: None) -> None:
     requests: list[httpx.Request] = []
 

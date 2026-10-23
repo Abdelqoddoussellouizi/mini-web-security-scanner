@@ -1,18 +1,16 @@
 # Mini Web Security Scanner
 
-A small FastAPI service that makes one non-invasive HTTP GET request to an authorized target and reviews HTTPS use and common security response headers. It does not exploit the target, follow redirects, or execute response content. A missing header indicates a possible configuration weakness, not proof that a site is vulnerable; appropriate settings depend on the application.
+A simple web app for checking HTTPS and common website security settings. It gives plain-language results and scan history, backed by a non-invasive scanner that makes one HTTP GET request to an authorized target. It does not exploit the target, follow redirects, or execute response content. A missing header is a signal to review, not proof that a site is vulnerable.
 
-> **Repository description:** A minimal FastAPI web security scanner for HTTPS and common security headers, with SSRF safeguards, SQLite history, and offline tests.
+> **Repository description:** A lightweight website security checker with plain-language results, scan history, SSRF safeguards, SQLite storage, and offline tests.
 
 ## Screenshots
 
-These screenshots show the running API documentation and a saved scan response:
+These screenshots show the browser-based scanner. The example results use synthetic data and a reserved demo hostname; no live website was scanned.
 
-![Swagger UI showing the scanner API endpoints](screenshots/swagger-ui.png)
+![Scanner homepage with the website address form and scan history](screenshots/scanner-home.png)
 
-![Saved scan response with pass and warning findings](screenshots/sample-scan-result.png)
-
-The result screenshot was produced locally with a mocked HTTP response. It is a reproducible demonstration of the scanner output, not a scan of a live website.
+![Example scan results with plain-language checks and review guidance](screenshots/scanner-result.png)
 
 ## Sample result
 

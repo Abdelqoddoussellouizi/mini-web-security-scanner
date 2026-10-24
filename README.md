@@ -126,4 +126,3 @@ Tests use mocked HTTP transports and patched DNS resolution; they do not make re
 ```powershell
 python -m pytest -q
 ```
-i will add this line just to test the commit option 
